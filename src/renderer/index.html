@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <svg class="app-logo" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="9" height="9" rx="1" fill="currentColor"/>
+          <rect x="4" y="4" width="5" height="5" rx="0.5" fill="var(--surface)"/>
+          <rect x="13" y="2" width="9" height="9" rx="1" fill="currentColor"/>
+          <rect x="15" y="4" width="5" height="5" rx="0.5" fill="var(--surface)"/>
+          <rect x="2" y="13" width="9" height="9" rx="1" fill="currentColor"/>
+          <rect x="4" y="15" width="5" height="5" rx="0.5" fill="var(--surface)"/>
+          <rect x="13" y="13" width="3" height="3" fill="currentColor"/>
+          <rect x="18" y="13" width="4" height="3" fill="currentColor"/>
+          <rect x="13" y="18" width="4" height="4" fill="currentColor"/>
+          <rect x="19" y="18" width="3" height="4" fill="currentColor"/>
+        </svg>
+        <h1>QR Generator</h1>
+        <button class="theme-btn" id="themeToggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">
+          <span id="themeIcon">🌙</span>
+        </button>
+      </div>
+
+      <!-- Input Type Switcher -->
+      <div class="type-switcher" role="tablist" aria-label="Content type">
+        <button class="type-btn active" data-type="url"      role="tab" aria-selected="true">URL</button>
+        <button class="type-btn"        data-type="wifi"     role="tab">WiFi</button>
+        <button class="type-btn"        data-type="vcard"    role="tab">vCard</button>
+        <button class="type-btn"        data-type="email"    role="tab">Email</button>
+        <button class="type-btn"        data-type="sms"      role="tab">SMS</button>
+        <button class="type-btn"        data-type="calendar" role="tab">Calendar</button>
+        <button class="type-btn"        data-type="phone"    role="tab">Phone</button>
+        <button class="type-btn"        data-type="text"     role="tab">Text</button>
+      </div>
+
+      <!-- Dynamic form area -->
+      <div class="form-container" id="formContainer"></div>
+
+      <!-- QR Options -->
+      <details class="collapsible" open>
+        <summary>⚙️ QR Options</summary>
+        <div class="options-body">
+
+          <div class="option-group">
+            <label for="errorCorrection">
+              Error Correction
+              <span class="hint-icon" title="L=7% recovery · M=15% · Q=25% · H=30% (use H with logos)">ⓘ</span>
+            </label>
+            <select id="errorCorrection">
+              <option value="L">L — Low (7%)</option>
+              <option value="M" selected>M — Medium (15%)</option>
+              <option value="Q">Q — Quartile (25%)</option>
+              <option value="H">H — High (30%)</option>
+            </select>
+          </div>
+
+          <div class="option-group">
+            <label for="qrSize">Size: <strong id="sizeValue">300</strong> px</label>
+            <input type="range" id="qrSize" min="100" max="1000" value="300" step="10">
+          </div>
+
+          <div class="option-group">
+            <label for="qrMargin">Margin: <strong id="marginValue">4</strong> modules</label>
+            <input type="range" id="qrMargin" min="0" max="10" value="4" step="1">
+          </div>
+
+          <div class="color-row">
+            <div class="option-group">
+              <label for="qrColor">Foreground</label>
+              <input type="color" id="qrColor" value="#000000" aria-label="Foreground colour">
+            </div>
+            <div class="option-group">
+              <label for="bgColor">Background</label>
+              <input type="color" id="bgColor" value="#ffffff" aria-label="Background colour">
+            </div>
+          </div>
+
+          <div class="option-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="gradientEnabled">
+              Enable Gradient
+            </label>
+            <div class="gradient-options" id="gradientOptions">
+              <select id="gradientType">
+                <option value="linear">Linear (diagonal)</option>
+                <option value="radial">Radial (center out)</option>
+              </select>
+              <div class="color-row">
+                <div class="option-group">
+                  <label for="gradientColor1">Start</label>
+                  <input type="color" id="gradientColor1" value="#4299e1" aria-label="Gradient start colour">
+                </div>
+                <div class="option-group">
+                  <label for="gradientColor2">End</label>
+                  <input type="color" id="gradientColor2" value="#667eea" aria-label="Gradient end colour">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="option-group">
+            <label for="qrStyle">Dot Style</label>
+            <select id="qrStyle">
+              <option value="squares">■ Square</option>
+              <option value="rounded">▣ Rounded</option>
+              <option value="dots">● Round</option>
+              <option value="hearts">♥ Hearts</option>
+              <option value="stars">★ Stars</option>
+              <option value="diamonds">◆ Diamonds</option>
+            </select>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- Logo Options -->
+      <details class="collapsible">
+        <summary>🖼️ Logo</summary>
+        <div class="options-body">
+          <div class="option-group">
+            <label for="logoInput">Upload Logo <span class="label-hint">(max 2 MB)</span></label>
+            <input type="file" id="logoInput" accept="image/*">
+            <div class="field-error" id="logoError"></div>
+          </div>
+          <div id="logoControls" style="display:none">
+            <div class="option-group">
+              <label for="logoSize">Logo Size: <strong id="logoSizeValue">20</strong>%</label>
+              <input type="range" id="logoSize" min="10" max="30" value="20" step="1">
+            </div>
+            <div class="option-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="transparentBg">
+                Transparent Background
+              </label>
+            </div>
+            <div class="option-group" id="logoBgGroup">
+              <label for="logoBgColor">Logo Background</label>
+              <input type="color" id="logoBgColor" value="#ffffff" aria-label="Logo background colour">
+            </div>
+            <button class="btn-secondary btn-sm" id="clearLogoBtn">✕ Remove Logo</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- History -->
+      <details class="collapsible" id="historySection">
+        <summary>🕐 History</summary>
+        <div class="options-body">
+          <div id="historyList" class="history-list"></div>
+          <button class="btn-secondary btn-sm" id="clearHistoryBtn">Clear History</button>
+        </div>
+      </details>
+
+      <!-- Batch Generate -->
+      <details class="collapsible">
+        <summary>📦 Batch Generate</summary>
+        <div class="options-body">
+          <p class="label-hint">CSV columns: <code>url</code>, <code>label</code></p>
+          <button class="btn-secondary" id="loadCsvBtn">📂 Load CSV</button>
+          <div id="batchPreview" style="display:none">
+            <div class="batch-table-wrap">
+              <table class="batch-table">
+                <thead><tr><th>URL</th><th>Label</th></tr></thead>
+                <tbody id="batchTableBody"></tbody>
+              </table>
+            </div>
+            <button class="btn-primary" id="batchGenerateBtn">⚡ Generate All</button>
+          </div>
+          <div id="batchResult" class="batch-result"></div>
+        </div>
+      </details>
+
+    </aside>
+
+    <!-- ═══ MAIN AREA ═══ -->
+    <main class="main-area">
+
+      <div class="preview-wrapper">
+        <div class="preview-container" id="previewContainer">
+          <div class="spinner" id="spinner" aria-label="Generating..."></div>
+          <canvas id="previewCanvas"></canvas>
+          <div class="preview-placeholder" id="previewPlaceholder">
+            <svg class="placeholder-svg" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+              <rect x="4"  y="4"  width="28" height="28" rx="3" stroke="currentColor" stroke-width="3" fill="none"/>
+              <rect x="12" y="12" width="12" height="12" rx="1" fill="currentColor" opacity="0.4"/>
+              <rect x="48" y="4"  width="28" height="28" rx="3" stroke="currentColor" stroke-width="3" fill="none"/>
+              <rect x="56" y="12" width="12" height="12" rx="1" fill="currentColor" opacity="0.4"/>
+              <rect x="4"  y="48" width="28" height="28" rx="3" stroke="currentColor" stroke-width="3" fill="none"/>
+              <rect x="12" y="56" width="12" height="12" rx="1" fill="currentColor" opacity="0.4"/>
+              <rect x="48" y="48" width="12" height="12" rx="1" fill="currentColor" opacity="0.4"/>
+              <rect x="64" y="48" width="12" height="12" rx="1" fill="currentColor" opacity="0.4"/>
+              <rect x="48" y="64" width="12" height="12" rx="1" fill="currentColor" opacity="0.4"/>
+              <rect x="64" y="64" width="12" height="12" rx="1" fill="currentColor" opacity="0.4"/>
+            </svg>
+            <p>Enter content to generate a QR code</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-section">
+        <div class="export-buttons">
+          <button class="btn-export" id="savePng"        disabled>💾 PNG</button>
+          <button class="btn-export" id="saveSvg"        disabled>💾 SVG</button>
+          <button class="btn-export" id="saveJpg"        disabled>💾 JPG</button>
+          <button class="btn-export btn-copy" id="copyClipboard" disabled>📋 Copy</button>
+        </div>
+        <div class="keyboard-hints" aria-label="Keyboard shortcuts">
+          <span title="Save PNG">Ctrl+S</span>
+          <span title="Save SVG">Ctrl+⇧+S</span>
+          <span title="Copy to clipboard">Ctrl+C</span>
+          <span title="Generate now">Ctrl+↵</span>
+        </div>
+      </div>
+
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </main>
+
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
