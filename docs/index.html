@@ -356,6 +356,23 @@
             font-weight: 600;
         }
 
+        .seg-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+        .logo-clear-btn {
+            font-size: .75rem;
+            font-weight: 500;
+            color: var(--error);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 2px 6px;
+            border-radius: 4px;
+            line-height: 1;
+            transition: background .15s;
+        }
+        .logo-clear-btn:hover { background: rgba(239,68,68,.08); }
+
         /* Slider */
         .slider-row { display: flex; align-items: center; gap: .75rem; }
         .slider-wrap { flex: 1; }
@@ -595,7 +612,10 @@
 
         <!-- Logo -->
         <div class="form-group">
-            <label class="form-label">Logo <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+                <label class="form-label" style="margin:0">Logo <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+                <button class="logo-clear-btn" id="logoClearBtn" type="button" onclick="clearLogo()" style="display:none">× Remove logo</button>
+            </div>
             <div class="drop-zone" id="dropZone">
                 <input type="file" id="logo" accept="image/*" onchange="handleLogoChange(this)">
                 <div class="dz-inner">
@@ -644,7 +664,7 @@
 
         <!-- Error Correction -->
         <div class="form-group">
-            <label class="form-label">Error Correction</label>
+            <label class="form-label">Error Correction <span class="ec-lock-hint" id="ecLockHint" style="display:none;font-size:.75rem;color:var(--text-3);font-weight:400">— locked to H for logo</span></label>
             <div class="seg" id="ecSeg">
                 <button class="seg-btn active" data-v="L" onclick="pick('ec','L','ecSeg')">L · 7%</button>
                 <button class="seg-btn" data-v="M" onclick="pick('ec','M','ecSeg')">M · 15%</button>
@@ -742,7 +762,7 @@
         </a>
 
         <p class="tip-text" id="tipText">
-            Use error correction H when adding a logo so the QR code stays scannable.
+            Tip: higher error correction means the QR stays scannable even if partially covered.
         </p>
     </div>
 </div>
@@ -893,6 +913,16 @@
         const file = input.files[0];
         document.getElementById('dzName').textContent = file ? file.name : '';
         document.getElementById('logoOptions').style.display = file ? 'flex' : 'none';
+        document.getElementById('logoClearBtn').style.display = file ? '' : 'none';
+        document.getElementById('ecLockHint').style.display = file ? '' : 'none';
+        document.querySelectorAll('#ecSeg .seg-btn').forEach(b => { b.disabled = file ? b.dataset.v !== 'H' : false; });
+        if (file) pick('ec', 'H', 'ecSeg');
+    }
+
+    function clearLogo() {
+        const input = document.getElementById('logo');
+        input.value = '';
+        handleLogoChange(input);
     }
 
     const dz = document.getElementById('dropZone');

@@ -262,6 +262,22 @@
             font-weight: 600;
         }
 
+        .seg-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+        .logo-clear-btn {
+            font-size: .75rem;
+            font-weight: 500;
+            color: #e53e3e;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background .15s;
+        }
+        .logo-clear-btn:hover { background: rgba(229,62,62,.08); }
+
         /* Sliders */
         .slider-row { display: flex; align-items: center; gap: .75rem; }
         .slider-wrap { flex: 1; }
@@ -435,7 +451,10 @@
 
         <!-- Logo -->
         <div class="input-group">
-            <label for="logo">🖼️ Logo (optional)</label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+                <label for="logo" style="margin:0">🖼️ Logo (optional)</label>
+                <button class="logo-clear-btn" id="logoClearBtn" type="button" onclick="clearLogo()" style="display:none">× Remove logo</button>
+            </div>
             <input type="file" id="logo" accept="image/*" onchange="handleLogoChange(this)">
         </div>
 
@@ -473,7 +492,7 @@
                 </div>
             </div>
             <div class="input-group">
-                <label>Error Correction</label>
+                <label>Error Correction <span id="ecLockHint" style="display:none;font-size:.75rem;color:#94a3b8;font-weight:400">— locked to H for logo</span></label>
                 <div class="seg" id="ecSeg">
                     <button class="seg-btn active" data-v="L" onclick="pick('ec','L','ecSeg')">L · 7%</button>
                     <button class="seg-btn" data-v="M" onclick="pick('ec','M','ecSeg')">M · 15%</button>
@@ -662,7 +681,18 @@
 
         // ── Logo upload ───────────────────────────────────
         function handleLogoChange(input) {
-            document.getElementById('logoOptions').style.display = input.files[0] ? 'block' : 'none';
+            const file = input.files[0];
+            document.getElementById('logoOptions').style.display = file ? 'block' : 'none';
+            document.getElementById('logoClearBtn').style.display = file ? '' : 'none';
+            document.getElementById('ecLockHint').style.display = file ? '' : 'none';
+            document.querySelectorAll('#ecSeg .seg-btn').forEach(b => { b.disabled = file ? b.dataset.v !== 'H' : false; });
+            if (file) pick('ec', 'H', 'ecSeg');
+        }
+
+        function clearLogo() {
+            const input = document.getElementById('logo');
+            input.value = '';
+            handleLogoChange(input);
         }
 
         // ── WiFi helpers ──────────────────────────────────
