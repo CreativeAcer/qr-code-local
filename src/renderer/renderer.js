@@ -295,7 +295,7 @@ function scheduleLivePreview() {
 
 function setupOptionListeners() {
   const ids = ['errorCorrection', 'qrSize', 'qrMargin', 'qrColor', 'bgColor',
-               'qrStyle', 'gradientEnabled', 'gradientType', 'gradientColor1',
+               'qrStyle', 'eyeStyle', 'gradientEnabled', 'gradientType', 'gradientColor1',
                'gradientColor2', 'logoSize', 'logoBgColor', 'transparentBg']
   ids.forEach(id => {
     const el = document.getElementById(id)
@@ -340,11 +340,11 @@ async function generatePreview() {
   const opts = getOptions()
   showSpinner(true)
   try {
-    const { svgString } = await window.qrAPI.generate({
+    const { svgString, moduleCount, margin: marginMods } = await window.qrAPI.generate({
       text, ...opts, style: opts.style
     })
     state.lastSvgString = svgString
-    const canvas = await renderToCanvas(svgString, opts)
+    const canvas = await renderToCanvas(svgString, opts, moduleCount, marginMods)
     state.lastCanvas = canvas
 
     // Show canvas in preview
@@ -375,6 +375,7 @@ function getOptions() {
     darkColor:      document.getElementById('qrColor').value,
     lightColor:     document.getElementById('bgColor').value,
     style:          document.getElementById('qrStyle').value,
+    eyeStyle:       document.getElementById('eyeStyle').value,
     gradient:       document.getElementById('gradientEnabled').checked ? {
       type:   document.getElementById('gradientType').value,
       color1: document.getElementById('gradientColor1').value,
@@ -386,7 +387,7 @@ function getOptions() {
   }
 }
 
-async function renderToCanvas(svgString, opts) {
+async function renderToCanvas(svgString, opts, moduleCount, margin) {
   const size = opts.size || 300
   const canvas = document.createElement('canvas')
   canvas.width  = size
@@ -398,7 +399,12 @@ async function renderToCanvas(svgString, opts) {
   // 2. Colorise (replace black→darkColor, white→lightColor) + optional gradient
   coloriseCanvas(canvas, opts.darkColor, opts.lightColor, opts.gradient)
 
-  // 3. Composite logo if present
+  // 3. Overlay custom corner eye style (erase + redraw finder patterns)
+  if (opts.eyeStyle && opts.eyeStyle !== 'square' && moduleCount && margin !== undefined) {
+    overlayFinderPatterns(canvas, moduleCount, margin, opts.darkColor || '#000000', opts.lightColor || '#ffffff', opts.eyeStyle)
+  }
+
+  // 4. Composite logo if present
   if (state.logoFile) {
     await compositeLogo(canvas, state.logoFile, opts.logoSizePercent, opts.logoBgColor, opts.transparentBg)
   }
@@ -471,6 +477,52 @@ function coloriseCanvas(canvas, darkHex, lightHex, gradient) {
     }
   }
   ctx.putImageData(imageData, 0, 0)
+}
+
+// === CORNER EYE STYLING ══════════════════════════════════════════════════════
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.arcTo(x + w, y, x + w, y + h, r)
+  ctx.arcTo(x + w, y + h, x, y + h, r)
+  ctx.arcTo(x, y + h, x, y, r)
+  ctx.arcTo(x, y, x + w, y, r)
+  ctx.closePath()
+}
+
+function drawFinderPattern(ctx, ox, oy, cell, darkColor, lightColor, style) {
+  const s = 7 * cell
+  const cx = ox + s / 2
+  const cy = oy + s / 2
+  if (style === 'circle') {
+    ctx.fillStyle = darkColor
+    ctx.beginPath(); ctx.arc(cx, cy, s / 2, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = lightColor
+    ctx.beginPath(); ctx.arc(cx, cy, s / 2 - cell, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = darkColor
+    ctx.beginPath(); ctx.arc(cx, cy, 1.5 * cell, 0, Math.PI * 2); ctx.fill()
+  } else if (style === 'rounded') {
+    ctx.fillStyle = darkColor; roundRect(ctx, ox, oy, s, s, cell * 1.5); ctx.fill()
+    ctx.fillStyle = lightColor; roundRect(ctx, ox + cell, oy + cell, 5 * cell, 5 * cell, cell * 0.6); ctx.fill()
+    ctx.fillStyle = darkColor; roundRect(ctx, ox + 2 * cell, oy + 2 * cell, 3 * cell, 3 * cell, cell * 0.6); ctx.fill()
+  } else {
+    ctx.fillStyle = darkColor; ctx.fillRect(ox, oy, s, s)
+    ctx.fillStyle = lightColor; ctx.fillRect(ox + cell, oy + cell, 5 * cell, 5 * cell)
+    ctx.fillStyle = darkColor; ctx.fillRect(ox + 2 * cell, oy + 2 * cell, 3 * cell, 3 * cell)
+  }
+}
+
+function overlayFinderPatterns(canvas, moduleCount, margin, darkColor, lightColor, style) {
+  const ctx = canvas.getContext('2d')
+  const size = canvas.width
+  const cell = size / (moduleCount + 2 * margin)
+  const m = margin * cell
+  const far = (margin + moduleCount - 7) * cell
+  ;[{ x: m, y: m }, { x: far, y: m }, { x: m, y: far }].forEach(({ x, y }) => {
+    ctx.fillStyle = lightColor
+    ctx.fillRect(x, y, 7 * cell, 7 * cell)
+    drawFinderPattern(ctx, x, y, cell, darkColor, lightColor, style)
+  })
 }
 
 function compositeLogo(canvas, file, sizePercent, bgColor, transparent) {
@@ -738,6 +790,7 @@ async function loadSettings() {
   set('qrColor',         s.darkColor)
   set('bgColor',         s.lightColor)
   set('qrStyle',         s.style)
+  set('eyeStyle',        s.eyeStyle)
   set('gradientType',    s.gradientType)
   set('gradientColor1',  s.gradientColor1)
   set('gradientColor2',  s.gradientColor2)
@@ -770,6 +823,7 @@ function scheduleSettingsSave() {
       darkColor:       opts.darkColor,
       lightColor:      opts.lightColor,
       style:           opts.style,
+      eyeStyle:        opts.eyeStyle,
       gradientEnabled: !!opts.gradient,
       gradientType:    opts.gradient?.type,
       gradientColor1:  opts.gradient?.color1,
@@ -781,7 +835,7 @@ function scheduleSettingsSave() {
   }, 500)
 }
 
-['errorCorrection','qrSize','qrMargin','qrColor','bgColor','qrStyle',
+['errorCorrection','qrSize','qrMargin','qrColor','bgColor','qrStyle','eyeStyle',
  'gradientEnabled','gradientType','gradientColor1','gradientColor2',
  'logoSize','logoBgColor','transparentBg'].forEach(id => {
   const el = document.getElementById(id)

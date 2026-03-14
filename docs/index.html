@@ -578,32 +578,32 @@
         <!-- URL -->
         <div class="form-group" id="urlGroup">
             <label class="form-label" for="url">URL or Text</label>
-            <input type="text" id="url" class="input" placeholder="https://example.com" spellcheck="false" autocomplete="off">
+            <input type="text" id="url" class="input" placeholder="https://example.com" spellcheck="false" autocomplete="off" oninput="scheduleGenerate()">
         </div>
 
         <!-- WiFi form (hidden by default) -->
         <div id="wifiForm">
             <div class="form-group">
                 <label class="form-label" for="wifiSSID">Network Name (SSID)</label>
-                <input type="text" id="wifiSSID" class="input" placeholder="MyHomeNetwork" autocomplete="off">
+                <input type="text" id="wifiSSID" class="input" placeholder="MyHomeNetwork" autocomplete="off" oninput="scheduleGenerate()">
             </div>
             <div class="form-group">
                 <label class="form-label" for="wifiPassword">Password</label>
                 <div class="pw-wrap">
-                    <input type="password" id="wifiPassword" class="input" placeholder="••••••••" autocomplete="off">
+                    <input type="password" id="wifiPassword" class="input" placeholder="••••••••" autocomplete="off" oninput="scheduleGenerate()">
                     <button class="pw-toggle" onclick="togglePw()" title="Show/hide password" type="button">👁</button>
                 </div>
             </div>
             <div class="form-group">
                 <label class="form-label" for="wifiSecurity">Security Type</label>
-                <select id="wifiSecurity" class="input">
+                <select id="wifiSecurity" class="input" onchange="scheduleGenerate()">
                     <option value="WPA">WPA / WPA2</option>
                     <option value="WEP">WEP</option>
                     <option value="nopass">None (open network)</option>
                 </select>
             </div>
             <label class="toggle" style="margin-top:-.25rem">
-                <input type="checkbox" id="wifiHidden">
+                <input type="checkbox" id="wifiHidden" onchange="scheduleGenerate()">
                 Hidden network
             </label>
         </div>
@@ -689,7 +689,7 @@
             <div class="slider-row">
                 <div class="slider-wrap">
                     <input type="range" id="qrSize" min="100" max="600" value="300" step="10"
-                        oninput="document.getElementById('sizeVal').textContent = this.value + ' × ' + this.value + ' px'">
+                        oninput="document.getElementById('sizeVal').textContent = this.value + ' × ' + this.value + ' px'; scheduleGenerate()">
                 </div>
                 <span class="slider-val" id="sizeVal">300 × 300 px</span>
             </div>
@@ -702,7 +702,7 @@
                 <div class="slider-row">
                     <div class="slider-wrap">
                         <input type="range" id="logoSize" min="10" max="30" value="20" step="1"
-                            oninput="document.getElementById('logoSizeVal').textContent = this.value + '%'">
+                            oninput="document.getElementById('logoSizeVal').textContent = this.value + '%'; scheduleGenerate()">
                     </div>
                     <span class="slider-val" id="logoSizeVal">20%</span>
                 </div>
@@ -719,7 +719,7 @@
                         <span class="color-hex" id="logoBgColorHex">#ffffff</span>
                     </div>
                     <label class="toggle">
-                        <input type="checkbox" id="transparentBg">
+                        <input type="checkbox" id="transparentBg" onchange="scheduleGenerate()">
                         Transparent
                     </label>
                 </div>
@@ -906,10 +906,18 @@
     // ── State ─────────────────────────────────────────────
     const state = { style: 'squares', ec: 'L', eyeStyle: 'square' };
 
+    // ── Live preview ──────────────────────────────────────
+    let _liveTimer;
+    function scheduleGenerate() {
+        clearTimeout(_liveTimer);
+        _liveTimer = setTimeout(() => generateQR(true), 400);
+    }
+
     function pick(key, val, segId) {
         state[key] = val;
         document.querySelectorAll('#' + segId + ' .seg-btn').forEach(b =>
             b.classList.toggle('active', b.dataset.v === val));
+        scheduleGenerate();
     }
 
     // ── Color sync ────────────────────────────────────────
@@ -917,6 +925,7 @@
         const hex = document.getElementById(id).value.toLowerCase();
         document.getElementById(id + 'Fill').style.background = hex;
         document.getElementById(id + 'Hex').textContent = hex;
+        scheduleGenerate();
     }
 
     // ── Logo upload ───────────────────────────────────────
@@ -927,7 +936,7 @@
         document.getElementById('logoClearBtn').style.display = file ? '' : 'none';
         document.getElementById('ecLockHint').style.display = file ? '' : 'none';
         document.querySelectorAll('#ecSeg .seg-btn').forEach(b => { b.disabled = file ? b.dataset.v !== 'H' : false; });
-        if (file) pick('ec', 'H', 'ecSeg');
+        if (file) pick('ec', 'H', 'ecSeg'); else scheduleGenerate();
     }
 
     function clearLogo() {
@@ -1121,15 +1130,15 @@
     }
 
     // ── Main generate ─────────────────────────────────────
-    async function generateQR() {
+    async function generateQR(silent = false) {
         let content;
         if (activePreset === 'wifi') {
             const ssid = document.getElementById('wifiSSID').value.trim();
-            if (!ssid) { toast('Please enter a network name'); return; }
+            if (!ssid) { if (!silent) toast('Please enter a network name'); return; }
             content = buildWifiString();
         } else {
             content = document.getElementById('url').value.trim();
-            if (!content) { toast('Please enter a URL or text'); return; }
+            if (!content) { if (!silent) toast('Please enter a URL or text'); return; }
         }
 
         const qrColor = document.getElementById('qrColor').value;
@@ -1161,7 +1170,7 @@
             dl.download = (activePreset || 'qrcode') + '.png';
             dl.style.display = 'flex';
 
-            toast('QR code ready!', 'ok');
+            if (!silent) toast('QR code ready!', 'ok');
         } catch (err) {
             console.error(err);
             toast('Error: ' + err.message);
