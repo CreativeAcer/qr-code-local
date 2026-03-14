@@ -23,6 +23,7 @@ async function init() {
   setupLogoControls()
   setupBatch()
   setupHistoryControls()
+  setupFrameOptions()
 }
 
 // === THEME ═══════════════════════════════════════════════════════════════════
@@ -344,19 +345,37 @@ async function generatePreview() {
       text, ...opts, style: opts.style
     })
     state.lastSvgString = svgString
-    const canvas = await renderToCanvas(svgString, opts, moduleCount, marginMods)
-    state.lastCanvas = canvas
+    const rawCanvas = await renderToCanvas(svgString, opts, moduleCount, marginMods)
+
+    // Reliability score
+    const cellPx = opts.size / (moduleCount + 2 * marginMods)
+    showScorePanel(calcReliabilityScore({
+      darkColor:  opts.darkColor  || '#000000',
+      lightColor: opts.lightColor || '#ffffff',
+      cellPx,
+      errorLevel:  opts.errorLevel,
+      hasLogo:    !!state.logoFile,
+      logoSizePct: opts.logoSizePercent
+    }))
+
+    // Store raw canvas for share card, apply frame for display
+    _rawQrCanvas = rawCanvas
+    const ctaText    = document.getElementById('frameCta')?.value || 'SCAN ME'
+    const frameColor = document.getElementById('frameColor')?.value || '#4299e1'
+    const frameText  = document.getElementById('frameTextColor')?.value || '#ffffff'
+    const displayCanvas = applyFrame(rawCanvas, activeFrame, ctaText, frameColor, frameText)
+    state.lastCanvas = displayCanvas
 
     // Show canvas in preview
     const preview = document.getElementById('previewCanvas')
-    preview.width  = canvas.width
-    preview.height = canvas.height
+    preview.width  = displayCanvas.width
+    preview.height = displayCanvas.height
     const ctx = preview.getContext('2d')
-    ctx.drawImage(canvas, 0, 0)
+    ctx.drawImage(displayCanvas, 0, 0)
 
     showCanvas(true)
     setExportEnabled(true)
-    await saveToHistory(canvas, text)
+    await saveToHistory(rawCanvas, text)
   } catch (err) {
     console.error('QR generation error:', err)
     showToast('Failed to generate QR code', 'error')
@@ -525,6 +544,202 @@ function overlayFinderPatterns(canvas, moduleCount, margin, darkColor, lightColo
   })
 }
 
+// === RELIABILITY SCORE ═══════════════════════════════════════════════════════
+function hexToRgb(hex) {
+  const h = hex.replace('#', '')
+  return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) }
+}
+
+function relativeLuminance(hex) {
+  const { r, g, b } = hexToRgb(hex)
+  return [r, g, b].reduce((sum, c, i) => {
+    const v = c / 255
+    return sum + (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)) * [0.2126, 0.7152, 0.0722][i]
+  }, 0)
+}
+
+function contrastRatio(hex1, hex2) {
+  const L1 = relativeLuminance(hex1), L2 = relativeLuminance(hex2)
+  return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05)
+}
+
+function calcReliabilityScore({ darkColor, lightColor, cellPx, errorLevel, hasLogo, logoSizePct }) {
+  const contrast = contrastRatio(darkColor, lightColor)
+  const ecRank = { L: 0, M: 1, Q: 2, H: 3 }
+  const factors = []
+  let score = 100
+
+  if (contrast >= 7)        factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — excellent`, level: 'green' })
+  else if (contrast >= 4.5) factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — good`, level: 'green' })
+  else if (contrast >= 3)  { factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — low contrast`, level: 'amber' }); score -= 20 }
+  else                     { factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — very low`, level: 'red' }); score -= 40 }
+
+  if (cellPx >= 4)        factors.push({ label: `${cellPx.toFixed(1)}px per module — crisp`, level: 'green' })
+  else if (cellPx >= 2.5) { factors.push({ label: `${cellPx.toFixed(1)}px per module — OK`, level: 'amber' }); score -= 15 }
+  else                    { factors.push({ label: `${cellPx.toFixed(1)}px per module — too small`, level: 'red' }); score -= 35 }
+
+  if (hasLogo && ecRank[errorLevel] < 3) {
+    factors.push({ label: `EC ${errorLevel} with logo — scan failure risk`, level: 'red' }); score -= 30
+  } else if (ecRank[errorLevel] >= 2) {
+    factors.push({ label: `EC ${errorLevel} — highly resilient`, level: 'green' })
+  } else if (ecRank[errorLevel] === 1) {
+    factors.push({ label: `EC M — moderate resilience`, level: 'amber' }); score -= 5
+  } else {
+    factors.push({ label: `EC L — minimal resilience`, level: 'amber' }); score -= 10
+  }
+
+  if (hasLogo) {
+    if (logoSizePct <= 20)      factors.push({ label: `Logo ${logoSizePct}% — safe coverage`, level: 'green' })
+    else if (logoSizePct <= 27) { factors.push({ label: `Logo ${logoSizePct}% — near limit`, level: 'amber' }); score -= 15 }
+    else                        { factors.push({ label: `Logo ${logoSizePct}% — may block data`, level: 'red' }); score -= 30 }
+  }
+
+  score = Math.max(0, score)
+  const grade = score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 60 ? 'C' : score >= 45 ? 'D' : 'F'
+  const subtitles = { A: 'Excellent — scan anywhere', B: 'Good — print with confidence', C: 'Fair — test before large print runs', D: 'Poor — adjust settings', F: 'Critical — likely to fail scanning' }
+  return { grade, subtitle: subtitles[grade], factors }
+}
+
+function showScorePanel({ grade, subtitle, factors }) {
+  const panel = document.getElementById('scorePanel')
+  panel.style.display = 'flex'
+  const badge = document.getElementById('scoreBadge')
+  badge.textContent = grade
+  badge.className = 'score-badge ' + grade
+  document.getElementById('scoreSubtitle').textContent = subtitle
+  document.getElementById('scoreFactors').innerHTML = factors.map(f =>
+    `<div class="score-factor"><div class="score-dot ${f.level}"></div><span>${f.label}</span></div>`
+  ).join('')
+}
+
+// === SCAN FRAME ══════════════════════════════════════════════════════════════
+let activeFrame = 'none'
+
+function setupFrameOptions() {
+  ['frameNone', 'frameBanner', 'frameBadge'].forEach(id => {
+    const btn = document.getElementById(id)
+    if (!btn) return
+    btn.addEventListener('click', () => {
+      activeFrame = btn.dataset.frame
+      document.querySelectorAll('.frame-opt').forEach(b =>
+        b.classList.toggle('active', b.dataset.frame === activeFrame))
+      document.getElementById('frameOptions').style.display = activeFrame !== 'none' ? 'flex' : 'none'
+      scheduleLivePreview()
+    })
+  })
+  const ctaInput = document.getElementById('frameCta')
+  if (ctaInput) ctaInput.addEventListener('input', scheduleLivePreview)
+  const fc = document.getElementById('frameColor')
+  if (fc) fc.addEventListener('input', scheduleLivePreview)
+  const ftc = document.getElementById('frameTextColor')
+  if (ftc) ftc.addEventListener('input', scheduleLivePreview)
+}
+
+function applyFrame(srcCanvas, style, ctaText, frameColor, textColor) {
+  if (style === 'none') return srcCanvas
+  const qrW = srcCanvas.width
+  const bannerH = Math.round(qrW * 0.145)
+  const pad = style === 'badge' ? Math.round(qrW * 0.055) : 0
+  const totalW = qrW + pad * 2
+  const totalH = qrW + pad * 2 + bannerH
+
+  const out = document.createElement('canvas')
+  out.width = totalW
+  out.height = totalH
+  const ctx = out.getContext('2d')
+  const r = style === 'badge' ? Math.round(totalW * 0.065) : 0
+
+  if (style === 'badge') {
+    ctx.fillStyle = frameColor
+    roundRect(ctx, 0, 0, totalW, totalH, r); ctx.fill()
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, pad, pad, qrW, qrW, Math.max(2, r - pad * 0.6)); ctx.fill()
+  } else {
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, totalW, qrW)
+    ctx.fillStyle = frameColor
+    ctx.fillRect(0, qrW, totalW, bannerH)
+  }
+
+  ctx.drawImage(srcCanvas, pad, pad)
+
+  const fontSize = Math.max(12, Math.round(bannerH * 0.43))
+  ctx.fillStyle = textColor
+  ctx.font = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText((ctaText || 'SCAN ME').toUpperCase(), totalW / 2, qrW + pad + bannerH / 2)
+  return out
+}
+
+// === SHARE CARD ══════════════════════════════════════════════════════════════
+let _rawQrCanvas = null
+
+function setupShareCard() {
+  const btn = document.getElementById('shareCardBtn')
+  if (btn) btn.addEventListener('click', exportShareCard)
+}
+
+async function exportShareCard() {
+  if (!_rawQrCanvas) return
+  const opts = getOptions()
+  const darkColor  = opts.darkColor  || '#000000'
+  const lightColor = opts.lightColor || '#ffffff'
+
+  const lum = relativeLuminance(darkColor)
+  let gradA = darkColor, gradB
+  if (lum > 0.7) { gradA = '#4299e1'; gradB = '#667eea' }
+  else {
+    const { r, g, b } = hexToRgb(darkColor)
+    const mix = c => Math.round(c + (255 - c) * 0.42)
+    gradB = `#${mix(r).toString(16).padStart(2,'0')}${mix(g).toString(16).padStart(2,'0')}${mix(b).toString(16).padStart(2,'0')}`
+  }
+
+  const W = 1080, H = 1080
+  const card = document.createElement('canvas')
+  card.width = W; card.height = H
+  const ctx = card.getContext('2d')
+
+  const bg = ctx.createLinearGradient(0, 0, W, H)
+  bg.addColorStop(0, gradA); bg.addColorStop(1, gradB)
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H)
+
+  // Dot grid texture
+  ctx.fillStyle = 'rgba(255,255,255,0.065)'
+  for (let y = 28; y < H; y += 44) {
+    for (let x = 28; x < W; x += 44) {
+      ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill()
+    }
+  }
+
+  // White card panel
+  const pW = 720, pH = 820, pX = (W - pW) / 2, pY = 104, pR = 40
+  ctx.shadowColor = 'rgba(0,0,0,0.22)'; ctx.shadowBlur = 90; ctx.shadowOffsetY = 28
+  ctx.fillStyle = '#ffffff'
+  roundRect(ctx, pX, pY, pW, pH, pR); ctx.fill()
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0
+
+  // QR (scaled to 600px) centered in panel
+  const qrX = (W - 600) / 2, qrY = pY + 80
+  ctx.drawImage(_rawQrCanvas, qrX, qrY, 600, 600)
+
+  // CTA text
+  const ctaEl = document.getElementById('frameCta')
+  const ctaText = (activeFrame !== 'none' && ctaEl && ctaEl.value) ? ctaEl.value.toUpperCase() : 'SCAN ME'
+  ctx.fillStyle = '#0f172a'
+  ctx.font = '700 50px -apple-system, BlinkMacSystemFont, sans-serif'
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+  ctx.fillText(ctaText, W / 2, qrY + 600 + 58)
+
+  ctx.fillStyle = 'rgba(255,255,255,0.45)'
+  ctx.font = '400 20px -apple-system, BlinkMacSystemFont, sans-serif'
+  ctx.fillText('Made with QR Generator', W / 2, H - 52)
+
+  const dataUrl = card.toDataURL('image/png')
+  const result = await window.qrAPI.save({ format: 'png', dataUrl, defaultName: 'share-card' })
+  if (result.success) showToast(`Saved: ${result.filePath.split('/').pop()}`, 'success')
+}
+
 function compositeLogo(canvas, file, sizePercent, bgColor, transparent) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -562,6 +777,7 @@ function setupExportButtons() {
   document.getElementById('saveSvg').addEventListener('click', () => exportAs('svg'))
   document.getElementById('saveJpg').addEventListener('click', () => exportAs('jpeg'))
   document.getElementById('copyClipboard').addEventListener('click', copyToClipboard)
+  setupShareCard()
 }
 
 async function exportAs(format) {
@@ -860,8 +1076,9 @@ function showSpinner(visible) {
 }
 
 function setExportEnabled(enabled) {
-  ['savePng','saveSvg','saveJpg','copyClipboard'].forEach(id => {
-    document.getElementById(id).disabled = !enabled
+  ['savePng','saveSvg','saveJpg','copyClipboard','shareCardBtn'].forEach(id => {
+    const el = document.getElementById(id)
+    if (el) el.disabled = !enabled
   })
 }
 

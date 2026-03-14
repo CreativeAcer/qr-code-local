@@ -131,6 +131,43 @@
         </div>
       </details>
 
+      <!-- Scan Frame -->
+      <details class="collapsible">
+        <summary>🏷️ Scan Frame</summary>
+        <div class="options-body">
+          <div class="frame-opts">
+            <button class="frame-opt active" data-frame="none" id="frameNone">
+              <span class="frame-opt-icon">◻</span>
+              None
+            </button>
+            <button class="frame-opt" data-frame="banner" id="frameBanner">
+              <span class="frame-opt-icon">🏷️</span>
+              Banner
+            </button>
+            <button class="frame-opt" data-frame="badge" id="frameBadge">
+              <span class="frame-opt-icon">🔲</span>
+              Badge
+            </button>
+          </div>
+          <div id="frameOptions">
+            <div class="option-group">
+              <label for="frameCta">Call-to-Action Text</label>
+              <input type="text" id="frameCta" class="text-input" placeholder="SCAN ME" value="SCAN ME">
+            </div>
+            <div class="color-row">
+              <div class="option-group">
+                <label for="frameColor">Frame Color</label>
+                <input type="color" id="frameColor" value="#4299e1">
+              </div>
+              <div class="option-group">
+                <label for="frameTextColor">Text Color</label>
+                <input type="color" id="frameTextColor" value="#ffffff">
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
       <!-- Logo Options -->
       <details class="collapsible">
         <summary>🖼️ Logo</summary>
@@ -213,6 +250,16 @@
             <p>Enter content to generate a QR code</p>
           </div>
         </div>
+        <div class="score-panel" id="scorePanel">
+          <div class="score-header">
+            <div>
+              <div class="score-label">Reliability</div>
+              <div class="score-subtitle" id="scoreSubtitle"></div>
+            </div>
+            <div class="score-badge A" id="scoreBadge">A</div>
+          </div>
+          <div class="score-factors" id="scoreFactors"></div>
+        </div>
       </div>
 
       <div class="export-section">
@@ -221,6 +268,7 @@
           <button class="btn-export" id="saveSvg"        disabled>💾 SVG</button>
           <button class="btn-export" id="saveJpg"        disabled>💾 JPG</button>
           <button class="btn-export btn-copy" id="copyClipboard" disabled>📋 Copy</button>
+          <button class="btn-share-card" id="shareCardBtn" disabled>🎨 Share Card</button>
         </div>
         <div class="keyboard-hints" aria-label="Keyboard shortcuts">
           <span title="Save PNG">Ctrl+S</span>

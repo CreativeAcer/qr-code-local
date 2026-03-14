@@ -537,6 +537,135 @@
         .footer { text-align: center; margin-top: 2.5rem; font-size: .8125rem; color: var(--text-3); }
         .footer a { color: var(--text-3); text-decoration: underline; }
         .footer a:hover { color: var(--primary); }
+
+        /* ─── Preview actions row ────────────────────── */
+        .preview-actions {
+            display: flex;
+            gap: .625rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        /* ─── Share Card button ───────────────────────── */
+        .btn-share {
+            display: none;
+            align-items: center;
+            gap: .4rem;
+            padding: .6rem 1.1rem;
+            border: none;
+            border-radius: var(--r-sm);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-size: .875rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s;
+        }
+
+        .btn-share:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,.4); }
+
+        /* ─── Reliability Score ───────────────────────── */
+        .score-panel {
+            display: none;
+            flex-direction: column;
+            gap: .6rem;
+            width: 100%;
+            max-width: 320px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            padding: .875rem 1rem;
+        }
+
+        .score-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: .5rem;
+        }
+
+        .score-label {
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-3);
+        }
+
+        .score-subtitle {
+            font-size: .75rem;
+            color: var(--text-2);
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        .score-badge {
+            font-size: 1.1rem;
+            font-weight: 800;
+            min-width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .score-badge.A { background: linear-gradient(135deg, #10b981, #059669); }
+        .score-badge.B { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+        .score-badge.C { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .score-badge.D { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .score-badge.F { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .score-factors { display: flex; flex-direction: column; gap: .3rem; }
+
+        .score-factor {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .75rem;
+            color: var(--text-2);
+        }
+
+        .score-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .score-dot.green { background: #10b981; }
+        .score-dot.amber { background: #f59e0b; }
+        .score-dot.red   { background: #ef4444; }
+
+        /* ─── Scan Frame Designer ─────────────────────── */
+        .frame-opts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .5rem;
+        }
+
+        .frame-opt {
+            padding: .6rem .25rem;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            background: var(--surface);
+            cursor: pointer;
+            font-size: .7rem;
+            font-weight: 600;
+            color: var(--text-2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: border-color .15s, color .15s, background .15s;
+            font-family: inherit;
+        }
+
+        .frame-opt:hover { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,.04); }
+        .frame-opt.active { border-color: var(--primary); background: rgba(99,102,241,.07); color: var(--primary); }
+        .frame-opt-icon { font-size: 1.1rem; line-height: 1; }
+
+        #frameOptions { display: none; flex-direction: column; gap: .875rem; }
     </style>
 </head>
 <body>
@@ -726,6 +855,51 @@
             </div>
         </div>
 
+        <div class="hr"></div>
+
+        <!-- Scan Frame -->
+        <div class="form-group">
+            <label class="form-label">Scan Frame <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+            <div class="frame-opts">
+                <button class="frame-opt active" data-frame="none" onclick="pickFrame('none')">
+                    <span class="frame-opt-icon">◻</span>
+                    None
+                </button>
+                <button class="frame-opt" data-frame="banner" onclick="pickFrame('banner')">
+                    <span class="frame-opt-icon">🏷️</span>
+                    Banner
+                </button>
+                <button class="frame-opt" data-frame="badge" onclick="pickFrame('badge')">
+                    <span class="frame-opt-icon">🔲</span>
+                    Badge
+                </button>
+            </div>
+            <div id="frameOptions">
+                <div class="form-group" style="margin:0">
+                    <label class="form-label">Call-to-Action Text</label>
+                    <input type="text" id="frameCta" class="input" placeholder="SCAN ME" value="SCAN ME" oninput="scheduleGenerate()">
+                </div>
+                <div class="color-row">
+                    <div class="color-wrap" onclick="document.getElementById('frameColor').click()">
+                        <div class="swatch">
+                            <div class="swatch-fill" id="frameColorFill" style="background:#6366f1"></div>
+                            <input type="color" id="frameColor" value="#6366f1" oninput="syncColor('frameColor')">
+                        </div>
+                        <span class="color-name">Frame</span>
+                        <span class="color-hex" id="frameColorHex">#6366f1</span>
+                    </div>
+                    <div class="color-wrap" onclick="document.getElementById('frameTextColor').click()">
+                        <div class="swatch">
+                            <div class="swatch-fill" id="frameTextColorFill" style="background:#ffffff"></div>
+                            <input type="color" id="frameTextColor" value="#ffffff" oninput="syncColor('frameTextColor')">
+                        </div>
+                        <span class="color-name">Text</span>
+                        <span class="color-hex" id="frameTextColorHex">#ffffff</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Generate -->
         <button class="btn-gen" onclick="generateQR()">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -764,12 +938,33 @@
             <img id="qrPreview" src="" alt="Generated QR Code">
         </div>
 
-        <a id="dlBtn" class="btn-dl" download="qrcode.png">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1v8M4 6.5l3 3 3-3M2 12h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Download PNG
-        </a>
+        <div class="preview-actions">
+            <a id="dlBtn" class="btn-dl" download="qrcode.png">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 1v8M4 6.5l3 3 3-3M2 12h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Download PNG
+            </a>
+            <button class="btn-share" id="shareCardBtn" onclick="exportShareCard()">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M1 6h12" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M5 1l2 2 2-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Share Card
+            </button>
+        </div>
+
+        <div class="score-panel" id="scorePanel">
+            <div class="score-header">
+                <div>
+                    <div class="score-label">Reliability</div>
+                    <div class="score-subtitle" id="scoreSubtitle"></div>
+                </div>
+                <div class="score-badge A" id="scoreBadge">A</div>
+            </div>
+            <div class="score-factors" id="scoreFactors"></div>
+        </div>
 
         <p class="tip-text" id="tipText">
             Tip: higher error correction means the QR stays scannable even if partially covered.
@@ -895,6 +1090,11 @@
         }
 
         document.getElementById('tipText').textContent = p.tip;
+
+        // Sync frame color with preset and update CTA placeholder
+        setColorValue('frameColor', p.qrColor);
+        const frameCtas = { default: 'SCAN ME', instagram: 'FOLLOW ME', restaurant: 'VIEW MENU', business: 'SCAN MY CARD', wifi: 'TAP TO CONNECT', payment: 'SCAN TO PAY' };
+        document.getElementById('frameCta').placeholder = frameCtas[key] || 'SCAN ME';
     }
 
     function setColorValue(id, hex) {
@@ -1151,14 +1351,31 @@
 
         try {
             const qrData = QRCode.create(content, { errorCorrectionLevel: state.ec });
-            const canvas = renderQR(qrData, size, qrColor, bgColor, state.style, state.eyeStyle);
-            const ctx = canvas.getContext('2d');
+            const rawCanvas = renderQR(qrData, size, qrColor, bgColor, state.style, state.eyeStyle);
+            const ctx = rawCanvas.getContext('2d');
 
             if (logoInput.files && logoInput.files[0]) {
                 await overlayLogo(ctx, logoInput.files[0], size, logoSizePct, logoBg);
             }
 
-            const dataUrl = canvas.toDataURL('image/png');
+            // Reliability score
+            const cellPx = size / (qrData.modules.size + 4);
+            const hasLogo = !!(logoInput.files && logoInput.files[0]);
+            showScorePanel(calcReliabilityScore({ qrColor, bgColor, cellPx, ec: state.ec, hasLogo, logoSizePct }));
+
+            // Store raw canvas for share card
+            _rawQrCanvas = rawCanvas;
+            _shareQrText = content;
+
+            // Apply frame for display & download
+            const displayCanvas = applyFrame(
+                rawCanvas, activeFrame,
+                document.getElementById('frameCta').value,
+                document.getElementById('frameColor').value,
+                document.getElementById('frameTextColor').value
+            );
+
+            const dataUrl = displayCanvas.toDataURL('image/png');
 
             const img = document.getElementById('qrPreview');
             img.src = dataUrl;
@@ -1170,11 +1387,209 @@
             dl.download = (activePreset || 'qrcode') + '.png';
             dl.style.display = 'flex';
 
+            document.getElementById('shareCardBtn').style.display = 'flex';
+
             if (!silent) toast('QR code ready!', 'ok');
         } catch (err) {
             console.error(err);
             toast('Error: ' + err.message);
         }
+    }
+
+    // ── Reliability Score ─────────────────────────────
+    function hexToRgb(hex) {
+        const h = hex.replace('#', '');
+        return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+    }
+
+    function relativeLuminance(hex) {
+        const { r, g, b } = hexToRgb(hex);
+        return [r, g, b].reduce((sum, c, i) => {
+            const v = c / 255;
+            return sum + (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)) * [0.2126, 0.7152, 0.0722][i];
+        }, 0);
+    }
+
+    function contrastRatio(hex1, hex2) {
+        const L1 = relativeLuminance(hex1), L2 = relativeLuminance(hex2);
+        return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    }
+
+    function calcReliabilityScore({ qrColor, bgColor, cellPx, ec, hasLogo, logoSizePct }) {
+        const contrast = contrastRatio(qrColor, bgColor);
+        const ecRank = { L: 0, M: 1, Q: 2, H: 3 };
+        const factors = [];
+        let score = 100;
+
+        if (contrast >= 7)        factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — excellent`, level: 'green' });
+        else if (contrast >= 4.5) factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — good`, level: 'green' });
+        else if (contrast >= 3) { factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — low contrast`, level: 'amber' }); score -= 20; }
+        else                    { factors.push({ label: `Contrast ${contrast.toFixed(1)}:1 — very low`, level: 'red' }); score -= 40; }
+
+        if (cellPx >= 4)        factors.push({ label: `${cellPx.toFixed(1)}px per module — crisp`, level: 'green' });
+        else if (cellPx >= 2.5) { factors.push({ label: `${cellPx.toFixed(1)}px per module — OK`, level: 'amber' }); score -= 15; }
+        else                    { factors.push({ label: `${cellPx.toFixed(1)}px per module — too small`, level: 'red' }); score -= 35; }
+
+        if (hasLogo && ecRank[ec] < 3) {
+            factors.push({ label: `EC ${ec} with logo — scan failure risk`, level: 'red' }); score -= 30;
+        } else if (ecRank[ec] >= 2) {
+            factors.push({ label: `EC ${ec} — highly resilient`, level: 'green' });
+        } else if (ecRank[ec] === 1) {
+            factors.push({ label: `EC M — moderate resilience`, level: 'amber' }); score -= 5;
+        } else {
+            factors.push({ label: `EC L — minimal resilience`, level: 'amber' }); score -= 10;
+        }
+
+        if (hasLogo) {
+            if (logoSizePct <= 20)      factors.push({ label: `Logo ${logoSizePct}% — safe coverage`, level: 'green' });
+            else if (logoSizePct <= 27) { factors.push({ label: `Logo ${logoSizePct}% — near limit`, level: 'amber' }); score -= 15; }
+            else                        { factors.push({ label: `Logo ${logoSizePct}% — may block data`, level: 'red' }); score -= 30; }
+        }
+
+        score = Math.max(0, score);
+        const grade = score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 60 ? 'C' : score >= 45 ? 'D' : 'F';
+        const subtitles = { A: 'Excellent — scan anywhere', B: 'Good — print with confidence', C: 'Fair — test before large print runs', D: 'Poor — adjust settings', F: 'Critical — likely to fail scanning' };
+        return { grade, subtitle: subtitles[grade], factors };
+    }
+
+    function showScorePanel({ grade, subtitle, factors }) {
+        const panel = document.getElementById('scorePanel');
+        panel.style.display = 'flex';
+        const badge = document.getElementById('scoreBadge');
+        badge.textContent = grade;
+        badge.className = 'score-badge ' + grade;
+        document.getElementById('scoreSubtitle').textContent = subtitle;
+        document.getElementById('scoreFactors').innerHTML = factors.map(f =>
+            `<div class="score-factor"><div class="score-dot ${f.level}"></div><span>${f.label}</span></div>`
+        ).join('');
+    }
+
+    // ── Frame Designer ─────────────────────────────────
+    let activeFrame = 'none';
+
+    function pickFrame(val) {
+        activeFrame = val;
+        document.querySelectorAll('.frame-opt').forEach(b =>
+            b.classList.toggle('active', b.dataset.frame === val));
+        document.getElementById('frameOptions').style.display = val !== 'none' ? 'flex' : 'none';
+        scheduleGenerate();
+    }
+
+    function applyFrame(srcCanvas, style, ctaText, frameColor, textColor) {
+        if (style === 'none') return srcCanvas;
+        const qrW = srcCanvas.width;
+        const bannerH = Math.round(qrW * 0.145);
+        const pad = style === 'badge' ? Math.round(qrW * 0.055) : 0;
+        const totalW = qrW + pad * 2;
+        const totalH = qrW + pad * 2 + bannerH;
+
+        const out = document.createElement('canvas');
+        out.width = totalW;
+        out.height = totalH;
+        const ctx = out.getContext('2d');
+        const r = style === 'badge' ? Math.round(totalW * 0.065) : 0;
+
+        if (style === 'badge') {
+            ctx.fillStyle = frameColor;
+            roundRect(ctx, 0, 0, totalW, totalH, r); ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            roundRect(ctx, pad, pad, qrW, qrW, Math.max(2, r - pad * 0.6)); ctx.fill();
+        } else {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, totalW, qrW);
+            ctx.fillStyle = frameColor;
+            ctx.fillRect(0, qrW, totalW, bannerH);
+        }
+
+        ctx.drawImage(srcCanvas, pad, pad);
+
+        // CTA text
+        const fontSize = Math.max(12, Math.round(bannerH * 0.43));
+        ctx.fillStyle = textColor;
+        ctx.font = `700 ${fontSize}px Inter, -apple-system, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText((ctaText || 'SCAN ME').toUpperCase(), totalW / 2, qrW + pad + bannerH / 2);
+        return out;
+    }
+
+    // ── Social Share Card ───────────────────────────────
+    let _rawQrCanvas = null;
+    let _shareQrText = '';
+
+    async function exportShareCard() {
+        if (!_rawQrCanvas || !_shareQrText) { toast('Generate a QR code first'); return; }
+        const qrColor = document.getElementById('qrColor').value;
+        const bgColor = document.getElementById('bgColor').value;
+
+        // High-res QR (600px) for the card
+        let qrData;
+        try { qrData = QRCode.create(_shareQrText, { errorCorrectionLevel: state.ec }); }
+        catch (e) { toast('Could not create share card'); return; }
+        const qrCanvas = renderQR(qrData, 600, qrColor, bgColor, state.style, state.eyeStyle);
+
+        // Background: use QR color if dark enough, else fall back to indigo
+        const lum = relativeLuminance(qrColor);
+        let gradA = qrColor, gradB;
+        if (lum > 0.7) { gradA = '#6366f1'; gradB = '#8b5cf6'; }
+        else {
+            const { r, g, b } = hexToRgb(qrColor);
+            const mix = c => Math.round(c + (255 - c) * 0.42);
+            gradB = `#${mix(r).toString(16).padStart(2,'0')}${mix(g).toString(16).padStart(2,'0')}${mix(b).toString(16).padStart(2,'0')}`;
+        }
+
+        const W = 1080, H = 1080;
+        const card = document.createElement('canvas');
+        card.width = W; card.height = H;
+        const ctx = card.getContext('2d');
+
+        // Background gradient
+        const bg = ctx.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0, gradA);
+        bg.addColorStop(1, gradB);
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Subtle dot-grid texture
+        ctx.fillStyle = 'rgba(255,255,255,0.065)';
+        for (let y = 28; y < H; y += 44) {
+            for (let x = 28; x < W; x += 44) {
+                ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
+        // White card panel with shadow
+        const pW = 720, pH = 820, pX = (W - pW) / 2, pY = 104, pR = 40;
+        ctx.shadowColor = 'rgba(0,0,0,0.22)';
+        ctx.shadowBlur = 90;
+        ctx.shadowOffsetY = 28;
+        ctx.fillStyle = '#ffffff';
+        roundRect(ctx, pX, pY, pW, pH, pR); ctx.fill();
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+        // QR code in panel
+        const qrX = (W - 600) / 2, qrY = pY + 80;
+        ctx.drawImage(qrCanvas, qrX, qrY, 600, 600);
+
+        // CTA text below QR
+        const ctaInput = document.getElementById('frameCta');
+        const ctaText = (activeFrame !== 'none' && ctaInput && ctaInput.value) ? ctaInput.value.toUpperCase() : 'SCAN ME';
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '700 50px Inter, -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ctaText, W / 2, qrY + 600 + 58);
+
+        // Subtle footer
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.font = '400 20px Inter, -apple-system, sans-serif';
+        ctx.fillText('Made with QR Generator', W / 2, H - 52);
+
+        const link = document.createElement('a');
+        link.download = 'share-card.png';
+        link.href = card.toDataURL('image/png');
+        link.click();
+        toast('Share card saved!', 'ok');
     }
 
     // Enter key on URL field
