@@ -502,6 +502,16 @@
             </div>
         </div>
 
+        <!-- Corner Style -->
+        <div class="input-group">
+            <label>Corner Style</label>
+            <div class="seg" id="eyeSeg">
+                <button class="seg-btn active" data-v="square"  onclick="pick('eyeStyle','square','eyeSeg')">■ Square</button>
+                <button class="seg-btn" data-v="rounded" onclick="pick('eyeStyle','rounded','eyeSeg')">▢ Rounded</button>
+                <button class="seg-btn" data-v="circle"  onclick="pick('eyeStyle','circle','eyeSeg')">● Circle</button>
+            </div>
+        </div>
+
         <!-- Size -->
         <div class="input-group">
             <label>QR Code Size</label>
@@ -569,57 +579,57 @@
         const PRESETS = {
             default: {
                 qrColor: '#000000', bgColor: '#ffffff',
-                style: 'squares', ec: 'L',
+                style: 'squares', ec: 'L', eyeStyle: 'square',
                 placeholder: 'https://example.com',
                 banner: null
             },
             instagram: {
                 qrColor: '#833ab4', bgColor: '#ffffff',
-                style: 'dots', ec: 'H',
+                style: 'dots', ec: 'H', eyeStyle: 'circle',
                 placeholder: 'https://instagram.com/yourusername',
                 banner: {
                     icon: '📸', name: 'Instagram Style',
-                    desc: 'Bold purple tones · Round dots · Perfect for profiles',
+                    desc: 'Bold purple tones · Round dots · Circle corners',
                     gradient: 'linear-gradient(135deg, #833ab4 0%, #c13584 50%, #e1306c 100%)'
                 }
             },
             restaurant: {
                 qrColor: '#3d1e00', bgColor: '#fdf6e3',
-                style: 'squares', ec: 'M',
+                style: 'squares', ec: 'M', eyeStyle: 'rounded',
                 placeholder: 'https://yourmenu.com',
                 banner: {
                     icon: '🍽️', name: 'Restaurant Menu',
-                    desc: 'Warm cream & espresso tones · Elegant & inviting',
+                    desc: 'Warm cream & espresso tones · Rounded corners',
                     gradient: 'linear-gradient(135deg, #3d1e00 0%, #8b4513 60%, #cd853f 100%)'
                 }
             },
             business: {
                 qrColor: '#1e293b', bgColor: '#ffffff',
-                style: 'squares', ec: 'H',
+                style: 'squares', ec: 'H', eyeStyle: 'square',
                 placeholder: 'https://linkedin.com/in/yourname',
                 banner: {
                     icon: '💼', name: 'Business Card',
-                    desc: 'Sharp dark slate · Professional & trustworthy',
+                    desc: 'Sharp dark slate · Square corners · Professional',
                     gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 60%, #475569 100%)'
                 }
             },
             wifi: {
                 qrColor: '#0369a1', bgColor: '#f0f9ff',
-                style: 'dots', ec: 'M',
+                style: 'dots', ec: 'M', eyeStyle: 'circle',
                 placeholder: null,
                 banner: {
                     icon: '📶', name: 'WiFi Sharing',
-                    desc: 'Sky blue tones · Round dots · Instant connection',
+                    desc: 'Sky blue tones · Round dots · Circle corners',
                     gradient: 'linear-gradient(135deg, #0369a1 0%, #0284c7 60%, #38bdf8 100%)'
                 }
             },
             payment: {
                 qrColor: '#047857', bgColor: '#f0fdf4',
-                style: 'squares', ec: 'H',
+                style: 'squares', ec: 'H', eyeStyle: 'square',
                 placeholder: 'https://paypal.me/yourusername',
                 banner: {
                     icon: '💳', name: 'Payment QR',
-                    desc: 'Fresh green tones · Clean & trustworthy · High reliability',
+                    desc: 'Fresh green tones · Square corners · High reliability',
                     gradient: 'linear-gradient(135deg, #047857 0%, #059669 60%, #10b981 100%)'
                 }
             }
@@ -639,6 +649,7 @@
             setColorValue('bgColor', p.bgColor);
             pick('style', p.style, 'styleSeg');
             pick('ec', p.ec, 'ecSeg');
+            pick('eyeStyle', p.eyeStyle, 'eyeSeg');
 
             const isWifi = key === 'wifi';
             document.getElementById('urlGroup').style.display = isWifi ? 'none' : '';
@@ -664,7 +675,7 @@
         }
 
         // ── State ─────────────────────────────────────────
-        const state = { style: 'squares', ec: 'L' };
+        const state = { style: 'squares', ec: 'L', eyeStyle: 'square' };
 
         function pick(key, val, segId) {
             state[key] = val;
@@ -734,8 +745,50 @@
             ctx.restore();
         }
 
+        // ── Render helpers ────────────────────────────────
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        function isFinderModule(r, c, count) {
+            return (r < 7 && c < 7) || (r < 7 && c >= count - 7) || (r >= count - 7 && c < 7);
+        }
+
+        function drawFinderPattern(ctx, ox, oy, cell, qrColor, bgColor, style) {
+            const s = 7 * cell;
+            const cx = ox + s / 2, cy = oy + s / 2;
+            if (style === 'circle') {
+                ctx.fillStyle = qrColor;
+                ctx.beginPath(); ctx.arc(cx, cy, s / 2, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = bgColor;
+                ctx.beginPath(); ctx.arc(cx, cy, s / 2 - cell, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = qrColor;
+                ctx.beginPath(); ctx.arc(cx, cy, 1.5 * cell, 0, Math.PI * 2); ctx.fill();
+            } else if (style === 'rounded') {
+                ctx.fillStyle = qrColor;
+                roundRect(ctx, ox, oy, s, s, cell * 1.5); ctx.fill();
+                ctx.fillStyle = bgColor;
+                roundRect(ctx, ox + cell, oy + cell, 5 * cell, 5 * cell, cell * 0.6); ctx.fill();
+                ctx.fillStyle = qrColor;
+                roundRect(ctx, ox + 2 * cell, oy + 2 * cell, 3 * cell, 3 * cell, cell * 0.6); ctx.fill();
+            } else {
+                ctx.fillStyle = qrColor;
+                ctx.fillRect(ox, oy, s, s);
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(ox + cell, oy + cell, 5 * cell, 5 * cell);
+                ctx.fillStyle = qrColor;
+                ctx.fillRect(ox + 2 * cell, oy + 2 * cell, 3 * cell, 3 * cell);
+            }
+        }
+
         // ── Render QR to canvas ───────────────────────────
-        function renderQR(qrData, size, qrColor, bgColor, dotStyle) {
+        function renderQR(qrData, size, qrColor, bgColor, dotStyle, eyeStyle) {
             const modules = qrData.modules;
             const count = modules.size;
             const margin = 2;
@@ -753,6 +806,7 @@
             for (let r = 0; r < count; r++) {
                 for (let c = 0; c < count; c++) {
                     if (!modules.get(r, c)) continue;
+                    if (isFinderModule(r, c, count)) continue;
                     const x = (margin + c) * cell;
                     const y = (margin + r) * cell;
                     if (dotStyle === 'dots') {
@@ -766,6 +820,13 @@
                     }
                 }
             }
+
+            // Draw the three corner finder patterns
+            const m = margin * cell;
+            const far = (margin + count - 7) * cell;
+            drawFinderPattern(ctx, m,   m,   cell, qrColor, bgColor, eyeStyle); // top-left
+            drawFinderPattern(ctx, far, m,   cell, qrColor, bgColor, eyeStyle); // top-right
+            drawFinderPattern(ctx, m,   far, cell, qrColor, bgColor, eyeStyle); // bottom-left
             return canvas;
         }
 
@@ -826,7 +887,7 @@
 
             try {
                 const qrData = QRCode.create(content, { errorCorrectionLevel: state.ec });
-                const canvas = renderQR(qrData, size, qrColor, bgColor, state.style);
+                const canvas = renderQR(qrData, size, qrColor, bgColor, state.style, state.eyeStyle);
                 const ctx = canvas.getContext('2d');
 
                 if (logoInput.files && logoInput.files[0]) {
