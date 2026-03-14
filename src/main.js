@@ -128,7 +128,7 @@ ipcMain.handle('qr:generate', async (event, options) => {
   }
 
   const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="#fff"/>${shapes}</svg>`
-  return { svgString }
+  return { svgString, moduleCount, margin: marginMods }
 })
 
 // ─── IPC: Save File ───────────────────────────────────────────────────────────
