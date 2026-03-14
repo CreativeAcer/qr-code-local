@@ -12,7 +12,6 @@
     <style>
         :root {
             --primary: #6366f1;
-            --primary-dark: #4f46e5;
             --surface: #ffffff;
             --surface-2: #f8fafc;
             --surface-3: #f1f5f9;
@@ -41,10 +40,7 @@
         }
 
         /* ─── Header ─────────────────────────────────── */
-        .page-header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
+        .page-header { text-align: center; margin-bottom: 2.5rem; }
 
         .badge {
             display: inline-flex;
@@ -52,7 +48,7 @@
             gap: 5px;
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
-            font-size: 0.7rem;
+            font-size: .7rem;
             font-weight: 700;
             padding: 4px 12px;
             border-radius: 100px;
@@ -72,10 +68,7 @@
             margin-bottom: .5rem;
         }
 
-        .page-header p {
-            color: var(--text-2);
-            font-size: .9375rem;
-        }
+        .page-header p { color: var(--text-2); font-size: .9375rem; }
 
         /* ─── Card ───────────────────────────────────── */
         .card {
@@ -89,9 +82,7 @@
             grid-template-columns: 1fr 1fr;
         }
 
-        @media (max-width: 780px) {
-            .card { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 780px) { .card { grid-template-columns: 1fr; } }
 
         /* ─── Settings panel ─────────────────────────── */
         .settings {
@@ -117,6 +108,43 @@
 
         .hr { height: 1px; background: var(--border); }
 
+        /* ─── Presets row ────────────────────────────── */
+        .presets-row {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .4rem .75rem;
+            border: 1.5px solid var(--border);
+            border-radius: 100px;
+            background: var(--surface);
+            font-size: .8rem;
+            font-weight: 500;
+            color: var(--text-2);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(99,102,241,.04);
+        }
+
+        .preset-btn.active {
+            border-color: var(--primary);
+            background: rgba(99,102,241,.08);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         /* ─── Preview panel ──────────────────────────── */
         .preview {
             padding: 2rem;
@@ -139,7 +167,6 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            position: relative;
         }
 
         .empty-state {
@@ -152,29 +179,15 @@
             text-align: center;
         }
 
-        .empty-icon {
-            width: 56px;
-            height: 56px;
-            opacity: .35;
-        }
-
+        .empty-icon { width: 56px; height: 56px; opacity: .35; }
         .empty-state p { font-size: .875rem; }
 
-        #qrPreview {
-            max-width: 100%;
-            max-height: 100%;
-            display: none;
-            border-radius: 6px;
-        }
+        #qrPreview { max-width: 100%; max-height: 100%; display: none; border-radius: 6px; }
 
         /* ─── Form elements ──────────────────────────── */
         .form-group { display: flex; flex-direction: column; gap: .4rem; }
 
-        .form-label {
-            font-size: .8125rem;
-            font-weight: 500;
-            color: var(--text-2);
-        }
+        .form-label { font-size: .8125rem; font-weight: 500; color: var(--text-2); }
 
         .input {
             width: 100%;
@@ -192,6 +205,14 @@
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+        }
+
+        select.input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2394a3b8' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right .875rem center;
+            padding-right: 2.25rem;
         }
 
         /* Drop zone */
@@ -244,8 +265,7 @@
         .color-wrap:focus-within { border-color: var(--primary); }
 
         .swatch {
-            width: 26px;
-            height: 26px;
+            width: 26px; height: 26px;
             border-radius: 6px;
             border: 1.5px solid rgba(0,0,0,.09);
             flex-shrink: 0;
@@ -334,20 +354,10 @@
             box-shadow: 0 1px 4px rgba(99,102,241,.45);
         }
 
-        .slider-val {
-            font-size: .8125rem;
-            font-weight: 600;
-            color: var(--text);
-            min-width: 78px;
-            text-align: right;
-        }
+        .slider-val { font-size: .8125rem; font-weight: 600; color: var(--text); min-width: 78px; text-align: right; }
 
         /* Logo options */
-        #logoOptions {
-            display: none;
-            flex-direction: column;
-            gap: 1rem;
-        }
+        #logoOptions { display: none; flex-direction: column; gap: 1rem; }
 
         /* Logo bg row */
         .logo-bg-row { display: flex; align-items: center; gap: .625rem; }
@@ -364,11 +374,30 @@
             flex-shrink: 0;
         }
 
-        .toggle input[type="checkbox"] {
-            width: 15px; height: 15px;
-            accent-color: var(--primary);
+        .toggle input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+
+        /* WiFi form */
+        #wifiForm { display: none; flex-direction: column; gap: .875rem; }
+
+        .pw-wrap { position: relative; }
+
+        .pw-wrap .input { padding-right: 2.75rem; }
+
+        .pw-toggle {
+            position: absolute;
+            right: .75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
             cursor: pointer;
+            color: var(--text-3);
+            font-size: .875rem;
+            padding: 2px;
+            line-height: 1;
         }
+
+        .pw-toggle:hover { color: var(--text-2); }
 
         /* Generate button */
         .btn-gen {
@@ -392,15 +421,7 @@
             margin-top: .25rem;
         }
 
-        .btn-gen::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: white;
-            opacity: 0;
-            transition: opacity .15s;
-        }
-
+        .btn-gen::after { content: ''; position: absolute; inset: 0; background: white; opacity: 0; transition: opacity .15s; }
         .btn-gen:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,.4); }
         .btn-gen:hover::after { opacity: .07; }
         .btn-gen:active { transform: translateY(0); }
@@ -424,10 +445,17 @@
             transition: border-color .15s, color .15s, background .15s;
         }
 
-        .btn-dl:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(99,102,241,.04);
+        .btn-dl:hover { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,.04); }
+
+        /* Tip text */
+        .tip-text {
+            font-size: .75rem;
+            color: var(--text-3);
+            text-align: center;
+            max-width: 240px;
+            line-height: 1.55;
+            min-height: 2.4em;
+            transition: color .2s;
         }
 
         /* Toast */
@@ -453,13 +481,7 @@
         .toast.ok { background: var(--success); }
 
         /* Footer */
-        .footer {
-            text-align: center;
-            margin-top: 2.5rem;
-            font-size: .8125rem;
-            color: var(--text-3);
-        }
-
+        .footer { text-align: center; margin-top: 2.5rem; font-size: .8125rem; color: var(--text-3); }
         .footer a { color: var(--text-3); text-decoration: underline; }
         .footer a:hover { color: var(--primary); }
     </style>
@@ -476,12 +498,51 @@
 
     <!-- ── Settings ── -->
     <div class="settings">
+        <p class="panel-label">Quick Presets</p>
+
+        <!-- Presets -->
+        <div class="presets-row">
+            <button class="preset-btn" data-preset="instagram" onclick="applyPreset('instagram')">📸 Instagram</button>
+            <button class="preset-btn" data-preset="restaurant" onclick="applyPreset('restaurant')">🍽️ Restaurant</button>
+            <button class="preset-btn" data-preset="business" onclick="applyPreset('business')">💼 Business</button>
+            <button class="preset-btn" data-preset="wifi" onclick="applyPreset('wifi')">📶 WiFi</button>
+            <button class="preset-btn" data-preset="payment" onclick="applyPreset('payment')">💳 Payment</button>
+        </div>
+
+        <div class="hr"></div>
         <p class="panel-label">Settings</p>
 
         <!-- URL -->
-        <div class="form-group">
+        <div class="form-group" id="urlGroup">
             <label class="form-label" for="url">URL or Text</label>
             <input type="text" id="url" class="input" placeholder="https://example.com" spellcheck="false" autocomplete="off">
+        </div>
+
+        <!-- WiFi form (hidden by default) -->
+        <div id="wifiForm">
+            <div class="form-group">
+                <label class="form-label" for="wifiSSID">Network Name (SSID)</label>
+                <input type="text" id="wifiSSID" class="input" placeholder="MyHomeNetwork" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="wifiPassword">Password</label>
+                <div class="pw-wrap">
+                    <input type="password" id="wifiPassword" class="input" placeholder="••••••••" autocomplete="off">
+                    <button class="pw-toggle" onclick="togglePw()" title="Show/hide password" type="button">👁</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="wifiSecurity">Security Type</label>
+                <select id="wifiSecurity" class="input">
+                    <option value="WPA">WPA / WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">None (open network)</option>
+                </select>
+            </div>
+            <label class="toggle" style="margin-top:-.25rem">
+                <input type="checkbox" id="wifiHidden">
+                Hidden network
+            </label>
         </div>
 
         <div class="hr"></div>
@@ -515,7 +576,7 @@
                     <span class="color-hex" id="qrColorHex">#000000</span>
                 </div>
                 <div class="color-wrap" onclick="document.getElementById('bgColor').click()">
-                    <div class="swatch" style="border-color: rgba(0,0,0,.15)">
+                    <div class="swatch" style="border-color:rgba(0,0,0,.15)">
                         <div class="swatch-fill" id="bgColorFill" style="background:#ffffff"></div>
                         <input type="color" id="bgColor" value="#ffffff" oninput="syncColor('bgColor')">
                     </div>
@@ -531,6 +592,7 @@
             <div class="seg" id="styleSeg">
                 <button class="seg-btn active" data-v="squares" onclick="pick('style','squares','styleSeg')">■ Square</button>
                 <button class="seg-btn" data-v="dots" onclick="pick('style','dots','styleSeg')">● Round</button>
+                <button class="seg-btn" data-v="hearts" onclick="pick('style','hearts','styleSeg')">♥ Heart</button>
             </div>
         </div>
 
@@ -557,7 +619,7 @@
             </div>
         </div>
 
-        <!-- Logo options (visible only when logo uploaded) -->
+        <!-- Logo options -->
         <div id="logoOptions">
             <div class="form-group">
                 <label class="form-label">Logo Size</label>
@@ -633,8 +695,8 @@
             Download PNG
         </a>
 
-        <p style="font-size:.75rem; color:var(--text-3); text-align:center; max-width:240px; line-height:1.5">
-            Use error correction H when adding a logo so the QR code remains scannable.
+        <p class="tip-text" id="tipText">
+            Use error correction H when adding a logo so the QR code stays scannable.
         </p>
     </div>
 </div>
@@ -646,10 +708,90 @@
 <div class="toast" id="toast"></div>
 
 <script>
+    // ── Presets ───────────────────────────────────────────
+    const PRESETS = {
+        instagram: {
+            qrColor: '#833ab4', bgColor: '#ffffff',
+            style: 'dots', ec: 'H',
+            placeholder: 'https://instagram.com/yourusername',
+            tip: '💡 Add your profile photo as a logo for extra flair!'
+        },
+        restaurant: {
+            qrColor: '#3d1e00', bgColor: '#fdf6e3',
+            style: 'squares', ec: 'M',
+            placeholder: 'https://yourmenu.com',
+            tip: '💡 Link to your digital menu or online ordering page.'
+        },
+        business: {
+            qrColor: '#1e293b', bgColor: '#ffffff',
+            style: 'squares', ec: 'H',
+            placeholder: 'https://linkedin.com/in/yourname',
+            tip: '💡 Try adding your headshot or company logo!'
+        },
+        wifi: {
+            qrColor: '#0369a1', bgColor: '#f0f9ff',
+            style: 'dots', ec: 'M',
+            placeholder: null,
+            tip: '💡 Guests scan this to connect — no typing needed!'
+        },
+        payment: {
+            qrColor: '#047857', bgColor: '#f0fdf4',
+            style: 'squares', ec: 'H',
+            placeholder: 'https://paypal.me/yourusername',
+            tip: '💡 Works with PayPal.me, Venmo, CashApp & more.'
+        }
+    };
+
+    let activePreset = null;
+
+    function applyPreset(key) {
+        const p = PRESETS[key];
+        const isActive = activePreset === key;
+
+        // Toggle off
+        if (isActive) {
+            activePreset = null;
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('urlGroup').style.display = '';
+            document.getElementById('wifiForm').style.display = 'none';
+            document.getElementById('url').placeholder = 'https://example.com';
+            document.getElementById('tipText').textContent = 'Use error correction H when adding a logo so the QR code stays scannable.';
+            return;
+        }
+
+        activePreset = key;
+        document.querySelectorAll('.preset-btn').forEach(b =>
+            b.classList.toggle('active', b.dataset.preset === key));
+
+        // Colors
+        setColorValue('qrColor', p.qrColor);
+        setColorValue('bgColor', p.bgColor);
+
+        // Style + EC
+        pick('style', p.style, 'styleSeg');
+        pick('ec', p.ec, 'ecSeg');
+
+        // Show/hide WiFi form vs URL
+        const isWifi = key === 'wifi';
+        document.getElementById('urlGroup').style.display = isWifi ? 'none' : '';
+        document.getElementById('wifiForm').style.display = isWifi ? 'flex' : 'none';
+
+        if (!isWifi && p.placeholder) {
+            document.getElementById('url').placeholder = p.placeholder;
+        }
+
+        document.getElementById('tipText').textContent = p.tip;
+    }
+
+    function setColorValue(id, hex) {
+        document.getElementById(id).value = hex;
+        document.getElementById(id + 'Fill').style.background = hex;
+        document.getElementById(id + 'Hex').textContent = hex.toLowerCase();
+    }
+
     // ── State ─────────────────────────────────────────────
     const state = { style: 'squares', ec: 'L' };
 
-    // ── Segmented picker ──────────────────────────────────
     function pick(key, val, segId) {
         state[key] = val;
         document.querySelectorAll('#' + segId + ' .seg-btn').forEach(b =>
@@ -686,6 +828,25 @@
         }
     });
 
+    // ── WiFi helpers ──────────────────────────────────────
+    function togglePw() {
+        const f = document.getElementById('wifiPassword');
+        f.type = f.type === 'password' ? 'text' : 'password';
+    }
+
+    function escapeWifi(s) {
+        return s.replace(/([\\;,":` + '`' + `])/g, '\\$1');
+    }
+
+    function buildWifiString() {
+        const ssid = escapeWifi(document.getElementById('wifiSSID').value.trim());
+        const password = escapeWifi(document.getElementById('wifiPassword').value);
+        const security = document.getElementById('wifiSecurity').value;
+        const hidden = document.getElementById('wifiHidden').checked ? 'true' : 'false';
+        if (security === 'nopass') return `WIFI:T:nopass;S:${ssid};H:${hidden};;`;
+        return `WIFI:T:${security};S:${ssid};P:${password};H:${hidden};;`;
+    }
+
     // ── Toast ─────────────────────────────────────────────
     function toast(msg, type = 'err') {
         const el = document.getElementById('toast');
@@ -695,7 +856,27 @@
         el._t = setTimeout(() => el.className = 'toast', 3000);
     }
 
-    // ── Draw QR on canvas ─────────────────────────────────
+    // ── Heart drawing ─────────────────────────────────────
+    function drawHeart(ctx, x, y, size) {
+        const s = size * 0.86;
+        const cx = x + size / 2;
+        const cy = y + size / 2;
+        const r = s / 2;
+        ctx.save();
+        ctx.translate(cx, cy - r * 0.08);
+        ctx.scale(r, r);
+        ctx.beginPath();
+        ctx.moveTo(0, -0.38);
+        ctx.bezierCurveTo(-0.1, -0.68, -0.55, -0.68, -0.55, -0.27);
+        ctx.bezierCurveTo(-0.55, 0.12, -0.1, 0.32, 0, 0.62);
+        ctx.bezierCurveTo(0.1, 0.32, 0.55, 0.12, 0.55, -0.27);
+        ctx.bezierCurveTo(0.55, -0.68, 0.1, -0.68, 0, -0.38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // ── Render QR canvas ──────────────────────────────────
     function renderQR(qrData, size, qrColor, bgColor, dotStyle) {
         const modules = qrData.modules;
         const count = modules.size;
@@ -720,6 +901,8 @@
                     ctx.beginPath();
                     ctx.arc(x + cell / 2, y + cell / 2, cell * 0.44, 0, Math.PI * 2);
                     ctx.fill();
+                } else if (dotStyle === 'hearts') {
+                    drawHeart(ctx, x, y, cell);
                 } else {
                     ctx.fillRect(x, y, cell, cell);
                 }
@@ -728,7 +911,7 @@
         return canvas;
     }
 
-    // ── Logo overlay (Canvas) ─────────────────────────────
+    // ── Logo overlay ──────────────────────────────────────
     function overlayLogo(ctx, file, qrSize, sizePercent, logoBg) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -742,7 +925,6 @@
                     const total = logoSize + pad * 2;
                     const ox = (qrSize - total) / 2;
                     const oy = (qrSize - total) / 2;
-
                     if (logoBg) {
                         const r = 8;
                         ctx.fillStyle = logoBg;
@@ -766,8 +948,15 @@
 
     // ── Main generate ─────────────────────────────────────
     async function generateQR() {
-        const url = document.getElementById('url').value.trim();
-        if (!url) { toast('Please enter a URL or text'); return; }
+        let content;
+        if (activePreset === 'wifi') {
+            const ssid = document.getElementById('wifiSSID').value.trim();
+            if (!ssid) { toast('Please enter a network name'); return; }
+            content = buildWifiString();
+        } else {
+            content = document.getElementById('url').value.trim();
+            if (!content) { toast('Please enter a URL or text'); return; }
+        }
 
         const qrColor = document.getElementById('qrColor').value;
         const bgColor = document.getElementById('bgColor').value;
@@ -778,7 +967,7 @@
         const logoBg = transparent ? null : document.getElementById('logoBgColor').value;
 
         try {
-            const qrData = QRCode.create(url, { errorCorrectionLevel: state.ec });
+            const qrData = QRCode.create(content, { errorCorrectionLevel: state.ec });
             const canvas = renderQR(qrData, size, qrColor, bgColor, state.style);
             const ctx = canvas.getContext('2d');
 
@@ -795,6 +984,7 @@
 
             const dl = document.getElementById('dlBtn');
             dl.href = dataUrl;
+            dl.download = (activePreset || 'qrcode') + '.png';
             dl.style.display = 'flex';
 
             toast('QR code ready!', 'ok');
@@ -804,7 +994,7 @@
         }
     }
 
-    // Enter key shortcut
+    // Enter key on URL field
     document.getElementById('url').addEventListener('keydown', e => {
         if (e.key === 'Enter') generateQR();
     });
