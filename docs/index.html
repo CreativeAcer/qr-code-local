@@ -132,17 +132,53 @@
             white-space: nowrap;
         }
 
-        .preset-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(99,102,241,.04);
+        .preset-btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,.04); }
+
+        /* Per-preset accent colors when active */
+        .preset-btn[data-preset="default"].active  { border-color:#64748b; color:#475569; background:rgba(100,116,139,.08); }
+        .preset-btn[data-preset="instagram"].active{ border-color:#c13584; color:#c13584; background:rgba(193,53,132,.07); }
+        .preset-btn[data-preset="restaurant"].active{border-color:#7c3f00; color:#7c3f00; background:rgba(61,30,0,.07); }
+        .preset-btn[data-preset="business"].active { border-color:#1e293b; color:#1e293b; background:rgba(30,41,59,.07); }
+        .preset-btn[data-preset="wifi"].active     { border-color:#0369a1; color:#0369a1; background:rgba(3,105,161,.07); }
+        .preset-btn[data-preset="payment"].active  { border-color:#047857; color:#047857; background:rgba(4,120,87,.07); }
+
+        /* ─── Preset banner ──────────────────────────── */
+        .preset-banner {
+            display: none;
+            align-items: center;
+            gap: .875rem;
+            padding: .875rem 1.125rem;
+            border-radius: var(--r-sm);
+            color: white;
+            position: relative;
+            overflow: hidden;
         }
 
-        .preset-btn.active {
-            border-color: var(--primary);
-            background: rgba(99,102,241,.08);
-            color: var(--primary);
-            font-weight: 600;
+        .preset-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,.08);
+            border-radius: inherit;
+        }
+
+        .preset-banner-icon {
+            font-size: 2rem;
+            line-height: 1;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,.2));
+        }
+
+        .preset-banner-name {
+            font-weight: 700;
+            font-size: .9375rem;
+            letter-spacing: -.01em;
+        }
+
+        .preset-banner-desc {
+            font-size: .75rem;
+            opacity: .82;
+            margin-top: 1px;
         }
 
         /* ─── Preview panel ──────────────────────────── */
@@ -502,11 +538,21 @@
 
         <!-- Presets -->
         <div class="presets-row">
+            <button class="preset-btn active" data-preset="default" onclick="applyPreset('default')">⬜ Default</button>
             <button class="preset-btn" data-preset="instagram" onclick="applyPreset('instagram')">📸 Instagram</button>
             <button class="preset-btn" data-preset="restaurant" onclick="applyPreset('restaurant')">🍽️ Restaurant</button>
             <button class="preset-btn" data-preset="business" onclick="applyPreset('business')">💼 Business</button>
             <button class="preset-btn" data-preset="wifi" onclick="applyPreset('wifi')">📶 WiFi</button>
             <button class="preset-btn" data-preset="payment" onclick="applyPreset('payment')">💳 Payment</button>
+        </div>
+
+        <!-- Preset banner -->
+        <div class="preset-banner" id="presetBanner">
+            <span class="preset-banner-icon" id="presetBannerIcon"></span>
+            <div>
+                <p class="preset-banner-name" id="presetBannerName"></p>
+                <p class="preset-banner-desc" id="presetBannerDesc"></p>
+            </div>
         </div>
 
         <div class="hr"></div>
@@ -710,56 +756,84 @@
 <script>
     // ── Presets ───────────────────────────────────────────
     const PRESETS = {
+        default: {
+            qrColor: '#000000', bgColor: '#ffffff',
+            style: 'squares', ec: 'L',
+            placeholder: 'https://example.com',
+            tip: 'Customize colors, dot style, and error correction above.',
+            banner: null  // no banner for default
+        },
         instagram: {
             qrColor: '#833ab4', bgColor: '#ffffff',
             style: 'dots', ec: 'H',
             placeholder: 'https://instagram.com/yourusername',
-            tip: '💡 Add your profile photo as a logo for extra flair!'
+            tip: '💡 Add your profile photo as a logo for extra flair!',
+            banner: {
+                icon: '📸',
+                name: 'Instagram Style',
+                desc: 'Bold purple tones · Round dots · Perfect for profiles',
+                gradient: 'linear-gradient(135deg, #833ab4 0%, #c13584 50%, #e1306c 100%)'
+            }
         },
         restaurant: {
             qrColor: '#3d1e00', bgColor: '#fdf6e3',
             style: 'squares', ec: 'M',
             placeholder: 'https://yourmenu.com',
-            tip: '💡 Link to your digital menu or online ordering page.'
+            tip: '💡 Link to your digital menu or online ordering page.',
+            banner: {
+                icon: '🍽️',
+                name: 'Restaurant Menu',
+                desc: 'Warm cream & espresso tones · Elegant & inviting',
+                gradient: 'linear-gradient(135deg, #3d1e00 0%, #8b4513 60%, #cd853f 100%)'
+            }
         },
         business: {
             qrColor: '#1e293b', bgColor: '#ffffff',
             style: 'squares', ec: 'H',
             placeholder: 'https://linkedin.com/in/yourname',
-            tip: '💡 Try adding your headshot or company logo!'
+            tip: '💡 Try adding your headshot or company logo!',
+            banner: {
+                icon: '💼',
+                name: 'Business Card',
+                desc: 'Sharp dark slate · Professional & trustworthy',
+                gradient: 'linear-gradient(135deg, #1e293b 0%, #334155 60%, #475569 100%)'
+            }
         },
         wifi: {
             qrColor: '#0369a1', bgColor: '#f0f9ff',
             style: 'dots', ec: 'M',
             placeholder: null,
-            tip: '💡 Guests scan this to connect — no typing needed!'
+            tip: '💡 Guests scan this to connect — no typing needed!',
+            banner: {
+                icon: '📶',
+                name: 'WiFi Sharing',
+                desc: 'Sky blue tones · Round dots · Instant connection',
+                gradient: 'linear-gradient(135deg, #0369a1 0%, #0284c7 60%, #38bdf8 100%)'
+            }
         },
         payment: {
             qrColor: '#047857', bgColor: '#f0fdf4',
             style: 'squares', ec: 'H',
             placeholder: 'https://paypal.me/yourusername',
-            tip: '💡 Works with PayPal.me, Venmo, CashApp & more.'
+            tip: '💡 Works with PayPal.me, Venmo, CashApp & more.',
+            banner: {
+                icon: '💳',
+                name: 'Payment QR',
+                desc: 'Fresh green tones · Clean & trustworthy · High reliability',
+                gradient: 'linear-gradient(135deg, #047857 0%, #059669 60%, #10b981 100%)'
+            }
         }
     };
 
-    let activePreset = null;
+    let activePreset = 'default';
 
     function applyPreset(key) {
-        const p = PRESETS[key];
-        const isActive = activePreset === key;
-
-        // Toggle off
-        if (isActive) {
-            activePreset = null;
-            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('urlGroup').style.display = '';
-            document.getElementById('wifiForm').style.display = 'none';
-            document.getElementById('url').placeholder = 'https://example.com';
-            document.getElementById('tipText').textContent = 'Use error correction H when adding a logo so the QR code stays scannable.';
-            return;
-        }
+        // Clicking the already-active preset does nothing (default is always selectable)
+        if (activePreset === key && key !== 'default') return;
 
         activePreset = key;
+        const p = PRESETS[key];
+
         document.querySelectorAll('.preset-btn').forEach(b =>
             b.classList.toggle('active', b.dataset.preset === key));
 
@@ -775,9 +849,18 @@
         const isWifi = key === 'wifi';
         document.getElementById('urlGroup').style.display = isWifi ? 'none' : '';
         document.getElementById('wifiForm').style.display = isWifi ? 'flex' : 'none';
+        if (!isWifi && p.placeholder) document.getElementById('url').placeholder = p.placeholder;
 
-        if (!isWifi && p.placeholder) {
-            document.getElementById('url').placeholder = p.placeholder;
+        // Banner
+        const banner = document.getElementById('presetBanner');
+        if (p.banner) {
+            document.getElementById('presetBannerIcon').textContent = p.banner.icon;
+            document.getElementById('presetBannerName').textContent = p.banner.name;
+            document.getElementById('presetBannerDesc').textContent = p.banner.desc;
+            banner.style.background = p.banner.gradient;
+            banner.style.display = 'flex';
+        } else {
+            banner.style.display = 'none';
         }
 
         document.getElementById('tipText').textContent = p.tip;
