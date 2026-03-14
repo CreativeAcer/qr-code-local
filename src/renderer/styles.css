@@ -485,8 +485,10 @@ input[type="file"]:focus-visible { outline: 2px solid var(--accent); outline-off
 /* ─── Preview ────────────────────────────────────────────────────────────── */
 .preview-wrapper {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
   flex: 1;
   width: 100%;
 }
@@ -605,6 +607,124 @@ input[type="file"]:focus-visible { outline: 2px solid var(--accent); outline-off
   border-radius: 4px;
   padding: 0.15rem 0.45rem;
 }
+
+/* ─── Reliability Score Panel ────────────────────────────────────────────── */
+.score-panel {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.875rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+.score-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.score-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.score-subtitle {
+  font-size: 0.75rem;
+  color: var(--text);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.score-badge {
+  font-size: 1rem;
+  font-weight: 800;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.score-badge.A { background: linear-gradient(135deg, #38a169, #276749); }
+.score-badge.B { background: linear-gradient(135deg, #4299e1, #667eea); }
+.score-badge.C { background: linear-gradient(135deg, #d69e2e, #c05621); }
+.score-badge.D { background: linear-gradient(135deg, #e53e3e, #c53030); }
+.score-badge.F { background: linear-gradient(135deg, #e53e3e, #7b341e); }
+
+.score-factors { display: flex; flex-direction: column; gap: 0.275rem; }
+
+.score-factor {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.score-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.score-dot.green { background: #38a169; }
+.score-dot.amber { background: #d69e2e; }
+.score-dot.red   { background: #e53e3e; }
+
+/* ─── Scan Frame Options ──────────────────────────────────────────────────── */
+.frame-opts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.frame-opt {
+  padding: 0.5rem 0.25rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+  font-family: inherit;
+}
+
+.frame-opt:hover { border-color: var(--accent); color: var(--accent); }
+.frame-opt.active { border-color: var(--accent); background: rgba(66,153,225,0.08); color: var(--accent); }
+.frame-opt-icon { font-size: 1rem; line-height: 1; }
+
+#frameOptions { display: none; flex-direction: column; gap: 0.75rem; margin-top: 0.25rem; }
+
+/* ─── Share Card button in export row ────────────────────────────────────── */
+.btn-share-card {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+
+.btn-share-card:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+.btn-share-card:disabled { opacity: 0.4; cursor: default; }
 
 /* ─── Toast ──────────────────────────────────────────────────────────────── */
 .toast {
